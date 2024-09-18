@@ -1,5 +1,5 @@
 {
-  "name": "typescript-json-schema",
+  "name": "typescript-json-schema-simplify",
   "version": "0.56.0",
   "description": "typescript-json-schema generates JSON Schema files from your Typescript sources",
   "main": "dist/typescript-json-schema.js",

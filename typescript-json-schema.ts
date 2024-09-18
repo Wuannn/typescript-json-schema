@@ -59,6 +59,7 @@ export function getDefaultArgs(): Args {
         id: "",
         defaultNumberType: "number",
         tsNodeRegister: false,
+        simplifyOutPath: false
     };
 }
 
@@ -89,6 +90,7 @@ export type Args = {
     id: string;
     defaultNumberType: "number" | "integer";
     tsNodeRegister: boolean;
+    simplifyOutPath: boolean;
 };
 
 export type PartialArgs = Partial<Args>;
@@ -1725,13 +1727,33 @@ export async function exec(filePattern: string, fullTypeName: string, args = get
         throw new Error("No output definition. Probably caused by errors prior to this?");
     }
 
-    const json = stringify(definition, null, 4) + "\n\n";
+    let json = stringify(definition, null, 4) + "\n\n";
     if (args.out) {
         return new Promise((resolve, reject) => {
             const fs = require("fs");
             fs.mkdir(path.dirname(args.out), { recursive: true }, function (mkErr: Error) {
                 if (mkErr) {
                     return reject(new Error("Unable to create parent directory for output file: " + mkErr.message));
+                }
+
+                // 如果需要简化路径
+                if(args.simplifyOutPath){
+                    // 解析JSON数据
+                    const jsonData = JSON.parse(json);
+                    // 遍历properties，替换$ref为对应的type
+                    // eslint-disable-next-line no-restricted-syntax
+                    for (const key in jsonData.properties) {
+                        if (jsonData.properties[key].hasOwnProperty('$ref')) {
+                            const ref = jsonData.properties[key].$ref;
+                            const refPath = ref.split('/').slice(2)
+                                .join('/');
+                            const refType = jsonData.definitions[refPath].type;
+                            jsonData.properties[key].type = refType;
+                            delete jsonData.properties[key].$ref;
+                        }
+                    }
+                    delete jsonData.definitions
+                    json = stringify(jsonData);
                 }
                 fs.writeFile(args.out, json, function (wrErr: Error) {
                     if (wrErr) {

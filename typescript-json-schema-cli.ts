@@ -53,6 +53,8 @@ export function run() {
             .describe("defaultNumberType", "Default number type.")
         .boolean("tsNodeRegister").default("tsNodeRegister", defaultArgs.tsNodeRegister)
             .describe("tsNodeRegister", "Use ts-node/register (needed for requiring typescript files).")
+        .boolean("simplifyOutPath").default("simplifyOutPath", defaultArgs.simplifyOutPath)
+            .describe("simplifyOutPath", "Simplify the path to access data types in Schema files")
         .argv;
 
     exec(args._[0], args._[1], {
@@ -78,6 +80,7 @@ export function run() {
         id: args.id,
         defaultNumberType: args.defaultNumberType,
         tsNodeRegister: args.tsNodeRegister,
+        simplifyOutPath: args.simplifyOutPath
     });
 }
 
